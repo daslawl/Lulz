@@ -12,20 +12,18 @@ class Computer:
         self.extra_mem = defaultdict(int)
 
     def store_mem(self, idx, val):
-        # print("store_mem", idx, val)
-        store_idx = self.param_idx(idx, True)
-        if store_idx < len(self.mem):
-            self.mem[store_idx] = val
+        idx = self.param_idx(idx, True)
+        if idx < len(self.mem):
+            self.mem[idx] = val
         else:
-            self.extra_mem[store_idx] = val
+            self.extra_mem[idx] = val
 
     def get_mem(self, idx):
-        print("get_mem", idx)
-        print("get_mem", self.param_idx(idx))
-        if self.param_idx(idx) < len(self.mem):
-            return self.mem[self.param_idx(idx)]
+        idx  =self.param_idx(idx)
+        if idx < len(self.mem):
+            return self.mem[idx]
         else:
-            return self.extra_mem[self.param_idx(idx)]
+            return self.extra_mem[idx]
 
     def add(self):
         self.store_mem(2, self.get_mem(0) + self.get_mem(1))
@@ -42,7 +40,6 @@ class Computer:
 
     def output(self):
         out = self.get_mem(0)
-        print(out)
         self.ip += 2
         return out
 
@@ -58,13 +55,11 @@ class Computer:
 
     def eq(self):
         b = 1 if self.get_mem(0) == self.get_mem(1) else 0
-        # print("boo", b, self.get_mem(0), self.get_mem(1))
         self.store_mem(2, b)
         self.ip += 4
 
     def relative_base(self):
         self.rel_base += self.get_mem(0)
-        print("self.rel_base += ", self.get_mem(0), self.rel_base)
         self.ip += 2
 
     # TODO: clean up this mess
@@ -84,15 +79,15 @@ class Computer:
             conf = (int(remaining[-1]), int(remaining[-2]), 0)
         if len(remaining) == 3:
             conf = (int(remaining[-1]), int(remaining[-2]), int(remaining[-3]))
-        print("conf", conf, conf[idx], self.rel_base)
-
-        if conf[idx] == 0 or assign:
+        if conf[idx] == 2:
+            return self.mem[self.ip + idx + 1] + self.rel_base 
+        elif conf[idx] == 0 or assign:
             return self.mem[self.ip + idx + 1]
         elif conf[idx] == 1:
             return self.ip + idx + 1
         else:
-            print("OTHER")
-            return self.rel_base + idx + 1
+            print("Unimplemented mode")
+            
 
     def param_value(self, idx):
         return self.mem[self.param_idx(idx)]
@@ -110,7 +105,6 @@ class Computer:
 
         while opcode != 99:
             opcode = self.op()
-            print("OP", opcode, self.ip)
             if opcode == 1:
                 self.add()
             if opcode == 2:
@@ -121,7 +115,7 @@ class Computer:
                 else:
                     return
             if opcode == 4:
-                return self.output()
+                yield self.output()
             if opcode == 5:
                 self.je()
             if opcode == 6:
@@ -135,11 +129,12 @@ class Computer:
 
 
 if __name__ == "__main__":
-    with open("day9/e9.txt") as f:
+    with open("e9.txt") as f:
         data = list(map(int, f.read().split(",")))
     # 1
-
-    # with open("day7/e7.txt") as f:
-    #     data = list(map(int, f.read().split(",")))
-    data = [109, 1, 204, -1, 1001, 100, 1, 100, 1008, 100, 16, 101, 1006, 101, 0, 99]
-    print(Computer(data).run(5))
+    for v in Computer(data).run(1):
+        print(v)
+    #2 
+    for v in Computer(data).run(2):
+        print(v)
+    
