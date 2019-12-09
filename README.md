@@ -63,7 +63,7 @@ class Computer:
         self.ip += 2
 
     # TODO: clean up this mess
-    def param_idx(self, idx, assign=False):
+    def param_idx2(self, idx, assign=False):
         s = str(self.mem[self.ip])
 
         if len(s) == 1:
@@ -87,11 +87,46 @@ class Computer:
             return self.ip + idx + 1
         else:
             print("Unimplemented mode")
+    
+    def get_idx(self, idx, assign, mode):            
+        if mode == 2:
+            return self.mem[self.ip + idx + 1] + self.rel_base 
+        elif mode == 0 or assign:
+            return self.mem[self.ip + idx + 1]
+        elif mode == 1:
+            return self.ip + idx + 1
+
+
+    def param_idx(self, idx, assign=False):
+        s = self.mem[self.ip]
+
+        quote, reminder = divmod(s, 10)
+
+        if quote == 0:
+            return self.mem[self.ip + idx + 1]
             
+        op = reminder
+        quote, reminder = divmod(quote, 10)
 
-    def param_value(self, idx):
-        return self.mem[self.param_idx(idx)]
+        if quote == 0:
+            return reminder*10+op
 
+        
+        quote, reminder1 = divmod(quote, 10)
+
+        if quote == 0:
+            return self.get_idx(idx,assign,(reminder1, 0, 0)[idx])
+        
+        quote, reminder2 = divmod(quote, 10)
+
+        if quote == 0:
+            return self.get_idx(idx,assign, (reminder1, reminder2, 0)[idx])
+
+        quote, reminder3 = divmod(quote, 10)
+
+        if quote == 0:
+            return self.get_idx(idx,assign, (reminder1, reminder2, reminder3)[idx])
+            
     def op(self):
         s = str(
             self.mem[self.ip] if self.ip < len(self.mem) else self.extra_mem[self.ip]
@@ -129,7 +164,7 @@ class Computer:
 
 
 if __name__ == "__main__":
-    with open("e9.txt") as f:
+    with open("e9_input2.txt") as f:
         data = list(map(int, f.read().split(",")))
     # 1
     for v in Computer(data).run(1):
